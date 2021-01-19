@@ -96,8 +96,9 @@ namespace UtgKata.Api.Controllers
 
             var entity = this.mapper.Map<CustomerViewModel, Customer>(customer);
             int id = await this.customerRepo.AddAsync(entity);
+            var model = this.mapper.Map<Customer, CustomerViewModel>(entity);
 
-            return this.CreatedAtAction(nameof(GetCustomerById), new { id }, customer);
+            return this.CreatedAtAction(nameof(GetCustomerById), new { id }, model);
         }
     }
 }
