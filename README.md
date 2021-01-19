@@ -134,12 +134,10 @@ Error example:
 
 ```
 {
-  "hasError": true,
   "errorDetails": {
-    "relatedId": 8020,
-    "relatedType": "UtgKata.Data.Models.Customer",
-    "errorMessage": "The requested entity with an id of 8020 was not found"
+    "errorMessage": "The requested entity with an id of 2999 was not found"
   },
+  "hasErrors": true,
   "response": null
 }
 ```
