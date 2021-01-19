@@ -112,7 +112,7 @@ Successful example:
 
 ```
 {
-   "hasError":false,
+   "hasErrors":false,
    "errorDetails":null,
    "response":{
       "id":79,
