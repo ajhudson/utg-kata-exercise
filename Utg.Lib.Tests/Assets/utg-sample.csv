@@ -1,0 +1,4 @@
+customer_ref,firstname,lastname,address_1,address_2,town,county,country,post_code
+A1,John,Smith,1 Chapel Lane,Coppull,Chorley,Lancashire,UK,PR7 1AB
+B2,Alice,Jones,9 Princess Way,Euxton,Chorley,Lancashire,UK,PR6 9ED
+C3,George,Flibble,"Park View Cottage, 36 Maine Road",Meriden,Coventry,Warwickshire,UK,CV1 3ED
