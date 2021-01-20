@@ -19,7 +19,11 @@ Loop through the rows of the CSV file and send each row to a REST API POST endpo
 The REST API should then save the content to a database table. Format can match the CSV file.
 Create a REST API GET endpoint to retrieve the customer information, passing in a customer ref to filter the data.
 
-Contents should be returned in JSON format
+Contents should be returned in JSON format.
+
+The URL to get the customer by reference is: <http://localhost:55563/api/customer/ref/a1>
+
+Customer can also be found by ID: <http://localhost:55563/api/customer/1>
 
 ---
 

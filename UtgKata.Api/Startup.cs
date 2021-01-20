@@ -34,7 +34,8 @@ namespace UtgKata.Api
                 return new UtgKataDbContext(optionsBuilder.Options);
             });
 
-            services.AddTransient<IRepository<Customer>, GeneralRepository<Customer>>();
+            services.AddScoped<IRepository<Customer>, GeneralRepository<Customer>>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -9,9 +9,9 @@ namespace UtgKata.Data.Repositories
 {
     public class GeneralRepository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity
     {
-        private readonly UtgKataDbContext dbContext;
+        protected readonly UtgKataDbContext dbContext;
 
-        private readonly DbSet<TEntity> dbSet;
+        protected readonly DbSet<TEntity> dbSet;
 
         public GeneralRepository(UtgKataDbContext dbContext)
         {
@@ -19,7 +19,7 @@ namespace UtgKata.Data.Repositories
             this.dbSet = dbContext.Set<TEntity>();
         }
 
-        public async Task<int> AddAsync(TEntity entity)
+        public virtual async Task<int> AddAsync(TEntity entity)
         {
             await this.dbSet.AddAsync(entity);
             await this.dbContext.SaveChangesAsync();
@@ -27,14 +27,14 @@ namespace UtgKata.Data.Repositories
             return entity.Id;
         }
 
-        public async Task<List<TEntity>> GetAllAsync()
+        public virtual async Task<List<TEntity>> GetAllAsync()
         {
             var entities = await this.dbSet.ToListAsync();
 
             return entities;
         }
 
-        public async Task<TEntity> GetByIdAsync(int id)
+        public virtual async Task<TEntity> GetByIdAsync(int id)
         {
             var entity = await this.dbSet.FindAsync(id);
 

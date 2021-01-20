@@ -18,13 +18,13 @@ namespace UtgKata.Api.Tests.ControllerTests
 {
     public class ControllerTests
     {
-        private readonly Mock<IRepository<Customer>> customerRepoMock;
+        private readonly Mock<ICustomerRepository> customerRepoMock;
 
         private readonly IMapper mapper;
 
         public ControllerTests()
         {
-            this.customerRepoMock = new Mock<IRepository<Customer>>();
+            this.customerRepoMock = new Mock<ICustomerRepository>();
 
             var mapperConfig = new MapperConfiguration(cfg =>
             {
@@ -73,6 +73,50 @@ namespace UtgKata.Api.Tests.ControllerTests
             var model = result.Value as ErrorMessageViewModel;
             model.ShouldNotBeNull();
             model.ErrorMessage.ShouldBe("The requested entity with an id of 101 was not found");
+        }
+
+        [Fact]
+        public void ShouldFindCustomerByReference()
+        {
+            // Arrange
+            var customer = new Customer { Id = 101, CustomerRef = "ABC123", FirstName = "Jim", LastName = "Smith" };
+            this.customerRepoMock.Setup(x => x.GetByCustomerReference(It.IsAny<string>())).Returns(customer);
+            
+            var controller = new CustomerController(this.customerRepoMock.Object, this.mapper);
+
+            // Act
+            var result = controller.GetCustomerByReference("ABC123") as OkObjectResult;
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Value.ShouldBeOfType<CustomerViewModel>();
+            result.StatusCode.ShouldBe(StatusCodes.Status200OK);
+
+            var model = result.Value as CustomerViewModel;
+            model.CustomerRef.ShouldBe("ABC123");
+            model.Id.ShouldBe(101);
+            model.FirstName.ShouldBe("Jim");
+            model.LastName.ShouldBe("Smith");
+        }
+
+        [Fact]
+        public void ShouldReturnNotFoundWhenCannotFindCustomerByReference()
+        {
+            // Arrange
+            this.customerRepoMock.Setup(x => x.GetByCustomerReference(It.IsAny<string>())).Returns((Customer)null);
+
+            var controller = new CustomerController(this.customerRepoMock.Object, this.mapper);
+
+            // Act
+            var result = controller.GetCustomerByReference("ABC123") as NotFoundObjectResult;
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Value.ShouldBeOfType<ErrorMessageViewModel>();
+            result.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+
+            var errorMessageViewModel = result.Value as ErrorMessageViewModel;
+            errorMessageViewModel.ErrorMessage.ShouldBe("No customer could be found with the reference 'ABC123'");
         }
 
         [Fact]

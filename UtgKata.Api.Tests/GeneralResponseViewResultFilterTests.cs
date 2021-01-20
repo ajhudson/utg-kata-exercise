@@ -32,7 +32,7 @@ namespace UtgKata.Api.Tests
                 ActionDescriptor = new ActionDescriptor()
             };
 
-            var mockRepo = new Mock<IRepository<Customer>>();
+            var mockRepo = new Mock<ICustomerRepository>();
             var mockMapper = new Mock<IMapper>();
             var controller = new CustomerController(mockRepo.Object, mockMapper.Object);
             var actionResult = new OkObjectResult(new TestViewModel { TestId = 123 });
@@ -69,7 +69,7 @@ namespace UtgKata.Api.Tests
                 ActionDescriptor = new ActionDescriptor()
             };
 
-            var mockRepo = new Mock<IRepository<Customer>>();
+            var mockRepo = new Mock<ICustomerRepository>();
             var mockMapper = new Mock<IMapper>();
             var controller = new CustomerController(mockRepo.Object, mockMapper.Object);
             var actionResult = new BadRequestObjectResult(new ErrorMessageViewModel("Something bad happened"));
