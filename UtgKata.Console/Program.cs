@@ -3,6 +3,8 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using UtgKata.Data;
+using UtgKata.Data.Extensions;
+using UtgKata.Data.Models;
 using UtgKata.Lib.CsvReader.Models;
 
 namespace UtgKata.Console
@@ -20,6 +22,8 @@ namespace UtgKata.Console
             using (var ctx = new UtgKataDbContext(optsBuilder.Options))
             {
                 await ctx.Database.EnsureCreatedAsync();
+                ctx.Customers.Clear();
+                await ctx.SaveChangesAsync();
             }
 
             var csvImporter = new CsvImporter<CustomerRecordModel>();

@@ -18,12 +18,12 @@ namespace UtgKata.Api.Controllers
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private readonly IRepository<Customer> customerRepo;
+        private readonly ICustomerRepository customerRepo;
 
         private readonly IMapper mapper;
 
 
-        public CustomerController(IRepository<Customer> customerRepo, IMapper mapper)
+        public CustomerController(ICustomerRepository customerRepo, IMapper mapper)
         {
             this.customerRepo = customerRepo;
             this.mapper = mapper;
@@ -67,6 +67,24 @@ namespace UtgKata.Api.Controllers
             if (customer == null)
             {
                 return this.NotFound(new ErrorMessageViewModel(string.Format(ErrorResponseFactory.ErrorMessage_EntityNotFound, id)));
+            }
+
+            var model = this.mapper.Map<Customer, CustomerViewModel>(customer);
+
+            return this.Ok(model);
+        }
+
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Route("ref/{reference}")]
+        public IActionResult GetCustomerByReference(string reference)
+        {
+            var customer = this.customerRepo.GetByCustomerReference(reference);
+
+            if (customer == null)
+            {
+                return this.NotFound(new ErrorMessageViewModel($"No customer could be found with the reference '{reference}'"));
             }
 
             var model = this.mapper.Map<Customer, CustomerViewModel>(customer);
