@@ -26,10 +26,11 @@ namespace UtgKata.Api
         {
             services.AddControllers(opts => opts.Filters.Add<GeneralResponseViewResultFilterAttribute>());
             services.AddAutoMapper(typeof(Startup));
-            services.AddTransient(provider =>
+
+            services.AddScoped(provider =>
             {
                 var optionsBuilder = new DbContextOptionsBuilder<UtgKataDbContext>();
-                optionsBuilder.UseSqlServer(DbContextSettings.ConnectionString);
+                optionsBuilder.UseInMemoryDatabase(DbContextSettings.DatabaseName);
 
                 return new UtgKataDbContext(optionsBuilder.Options);
             });

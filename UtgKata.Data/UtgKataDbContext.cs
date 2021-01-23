@@ -13,15 +13,5 @@ namespace UtgKata.Data
         public UtgKataDbContext(DbContextOptions<UtgKataDbContext> options) : base(options)
         {
         }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Customer>()
-                        .Property(p => p.CreatedAt)
-                        .HasDefaultValueSql("GETDATE()");
-
-
-        }
-
     }
 }

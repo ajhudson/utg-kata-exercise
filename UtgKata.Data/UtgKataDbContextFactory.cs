@@ -11,7 +11,7 @@ namespace UtgKata.Data
         public UtgKataDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<UtgKataDbContext>();
-            optionsBuilder.UseSqlServer(DbContextSettings.ConnectionString);
+            optionsBuilder.UseInMemoryDatabase(DbContextSettings.DatabaseName);
 
             return new UtgKataDbContext(optionsBuilder.Options);
         }

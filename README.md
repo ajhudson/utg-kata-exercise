@@ -2,7 +2,8 @@
  
 The solution:
 
-To build a console app to read in a CSV file from a directory. The contents will then need to be sent to a REST API endpoint, in JSON format, and saved to a SQL database.
+To build a console app to read in a CSV file from a directory. The contents will then need to be sent to a REST API endpoint, in JSON format, and saved to a SQL 
+(in memory) database.
 
 CSV file will contain the following columns:
  - Customer Ref
@@ -21,9 +22,11 @@ Create a REST API GET endpoint to retrieve the customer information, passing in 
 
 Contents should be returned in JSON format.
 
-The URL to get the customer by reference is: <http://localhost:55563/api/customer/ref/a1>
+The URL to get the customer by reference is: <http://localhost:55563/api/customer/ref/a1>.
 
-Customer can also be found by ID: <http://localhost:55563/api/customer/1>
+Customer can also be found by ID: <http://localhost:55563/api/customer/1>.
+
+All customers will be returned at: <http://localhost:55563/api/customer> once the console app has completed.
 
 ---
 
