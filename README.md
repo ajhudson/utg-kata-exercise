@@ -1,5 +1,7 @@
 # UtgKata
  
+### Updated 23.01.2021
+
 The solution:
 
 To build a console app to read in a CSV file from a directory. The contents will then need to be sent to a REST API endpoint, in JSON format, and saved to a SQL 
@@ -43,11 +45,13 @@ All customers will be returned at: <http://localhost:55563/api/customer> once th
  
 There are 2 startup projects (Web API and Console). The console app will wait 5 seconds before attempting to read the CSV file and post each record via the API in an attempt to let the API project spin up. Polly is also used to retry the API endpoint in case the Web API takes longer than expected to load.
 
+The project uses a typical MVC pattern and an `ICustomerService` instance is injected into the controller which is where the business logic takes place of adding / retrieving customers. The controllers are thin and their only purpose is to decide which status code to return along with the serialised response.
+
 ---
 
 ## Database
 
-The MS SQL database is called `utgkata` and the connection string is `Data Source=localhost;Initial Catalog=utgkata;Integrated Security=True`. EF Core has been used to interact with the database.
+The MS SQL database is called `utgkata` and the connection string is `Data Source=localhost;Initial Catalog=utgkata;Integrated Security=True`. EF Core has been used to interact with the database and is set to use the 'in-memory' provider.
 
 When the console starts up, Entity Framework will try and create the database if it does not exist:
 
@@ -63,6 +67,21 @@ using (var ctx = new UtgKataDbContext(optsBuilder.Options))
 ```
 
 The `IDesignTimeDbContextFactory` has been used so that EF migrations did not have to be run on the startup project, and could instead be used by a .NET standard project.
+
+There is a generic repository which implements the following interface which will allow many more entity types to be used with little implementation. More complex queries such as getting a customer by reference can be implemented with a method which receives a predicate as an argument.
+
+```
+public interface IRepository<TEntity> where TEntity : BaseEntity
+{
+   public Task<TEntity> GetByIdAsync(int id);
+
+   public Task<List<TEntity>> GetAllAsync();
+
+   public Task<TEntity> AddAsync(TEntity entity);
+
+   public Task<TEntity> GetFirstMatchAsync(Func<TEntity, bool> filterCriteria);
+}
+```
 
 ---
 
