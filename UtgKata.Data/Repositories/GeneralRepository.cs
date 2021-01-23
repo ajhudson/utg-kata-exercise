@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using UtgKata.Data.Models;
+using System.Linq.Expressions;
 
 namespace UtgKata.Data.Repositories
 {
@@ -24,7 +26,7 @@ namespace UtgKata.Data.Repositories
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public virtual async Task<int> AddAsync(TEntity entity)
+        public virtual async Task<TEntity> AddAsync(TEntity entity)
         {
             // if the entity implements ICreatedAt then we want to set the created at property
             var createdAtEntity = entity as IEntityCreatedAt;
@@ -37,7 +39,7 @@ namespace UtgKata.Data.Repositories
             await this.dbSet.AddAsync(entity);
             await this.dbContext.SaveChangesAsync();
 
-            return entity.Id;
+            return entity;
         }
 
 
@@ -62,6 +64,18 @@ namespace UtgKata.Data.Repositories
             var entity = await this.dbSet.FindAsync(id);
 
             return entity;
+        }
+
+        /// <summary>
+        /// Get the first match using the criteria supplied.
+        /// </summary>
+        /// <param name="filterCriteria"></param>
+        /// <returns></returns>
+        public async Task<TEntity> GetFirstMatchAsync(Func<TEntity, bool> filterCriteria)
+        {
+            var entity = this.dbSet.Where(filterCriteria).FirstOrDefault();
+
+            return await Task.FromResult(entity);
         }
     }
 }

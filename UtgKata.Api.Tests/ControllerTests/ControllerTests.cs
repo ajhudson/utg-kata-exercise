@@ -13,18 +13,19 @@ using UtgKata.Api.Models;
 using UtgKata.Data.Models;
 using UtgKata.Data.Repositories;
 using Xunit;
+using UtgKata.Api.Services;
 
 namespace UtgKata.Api.Tests.ControllerTests
 {
     public class ControllerTests
     {
-        private readonly Mock<ICustomerRepository> customerRepoMock;
+        private readonly Mock<ICustomerService> customerServiceMock;
 
         private readonly IMapper mapper;
 
         public ControllerTests()
         {
-            this.customerRepoMock = new Mock<ICustomerRepository>();
+            this.customerServiceMock = new Mock<ICustomerService>();
 
             var mapperConfig = new MapperConfiguration(cfg =>
             {
@@ -38,9 +39,9 @@ namespace UtgKata.Api.Tests.ControllerTests
         public async Task GetByIdShouldReturnCustomer()
         {
             // Arrange
-            var customer = new Customer { Id = 101, FirstName = "Jim", LastName = "Smith" };
-            this.customerRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(customer);
-            var controller = new CustomerController(this.customerRepoMock.Object, this.mapper);
+            var customerViewModel = new CustomerViewModel { Id = 101, FirstName = "Jim", LastName = "Smith" };
+            this.customerServiceMock.Setup(x => x.GetCustomerByIdAsync(It.IsAny<int>())).ReturnsAsync(customerViewModel);
+            var controller = new CustomerController(this.customerServiceMock.Object, this.mapper);
 
             // Act
             var result = await controller.GetCustomerById(101) as OkObjectResult;
@@ -60,8 +61,8 @@ namespace UtgKata.Api.Tests.ControllerTests
         public async Task GetByIdShouldReturnErrorIfCustomerNotFound()
         {
             // Arrange
-            this.customerRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((Customer)null);
-            var controller = new CustomerController(this.customerRepoMock.Object, this.mapper);
+            this.customerServiceMock.Setup(x => x.GetCustomerByIdAsync(It.IsAny<int>())).ReturnsAsync((CustomerViewModel)null);
+            var controller = new CustomerController(this.customerServiceMock.Object, this.mapper);
 
             // Act
             var result = await controller.GetCustomerById(101) as NotFoundObjectResult;
@@ -76,16 +77,16 @@ namespace UtgKata.Api.Tests.ControllerTests
         }
 
         [Fact]
-        public void ShouldFindCustomerByReference()
+        public async Task ShouldFindCustomerByReference()
         {
             // Arrange
-            var customer = new Customer { Id = 101, CustomerRef = "ABC123", FirstName = "Jim", LastName = "Smith" };
-            this.customerRepoMock.Setup(x => x.GetByCustomerReference(It.IsAny<string>())).Returns(customer);
+            var customerViewModel = new CustomerViewModel { Id = 101, CustomerRef = "ABC123", FirstName = "Jim", LastName = "Smith" };
+            this.customerServiceMock.Setup(x => x.GetCustomerByReferenceAsync(It.IsAny<string>())).ReturnsAsync(customerViewModel);
             
-            var controller = new CustomerController(this.customerRepoMock.Object, this.mapper);
+            var controller = new CustomerController(this.customerServiceMock.Object, this.mapper);
 
             // Act
-            var result = controller.GetCustomerByReference("ABC123") as OkObjectResult;
+            var result = await controller.GetCustomerByReference("ABC123") as OkObjectResult;
 
             // Assert
             result.ShouldNotBeNull();
@@ -100,15 +101,15 @@ namespace UtgKata.Api.Tests.ControllerTests
         }
 
         [Fact]
-        public void ShouldReturnNotFoundWhenCannotFindCustomerByReference()
+        public async Task ShouldReturnNotFoundWhenCannotFindCustomerByReference()
         {
             // Arrange
-            this.customerRepoMock.Setup(x => x.GetByCustomerReference(It.IsAny<string>())).Returns((Customer)null);
+            this.customerServiceMock.Setup(x => x.GetCustomerByReferenceAsync(It.IsAny<string>())).ReturnsAsync((CustomerViewModel)null);
 
-            var controller = new CustomerController(this.customerRepoMock.Object, this.mapper);
+            var controller = new CustomerController(this.customerServiceMock.Object, this.mapper);
 
             // Act
-            var result = controller.GetCustomerByReference("ABC123") as NotFoundObjectResult;
+            var result = await controller.GetCustomerByReference("ABC123") as NotFoundObjectResult;
 
             // Assert
             result.ShouldNotBeNull();
@@ -123,10 +124,10 @@ namespace UtgKata.Api.Tests.ControllerTests
         public async Task GetAllShouldReturnAllCustomers()
         {
             // Arrange
-            var customer1 = new Customer { Id = 101, FirstName = "Jim", LastName = "Smith" };
-            var customer2 = new Customer { Id = 102, FirstName = "Alice", LastName = "Jones" };
-            this.customerRepoMock.Setup(x => x.GetAllAsync()).ReturnsAsync(new List<Customer> { customer1, customer2 });
-            var controller = new CustomerController(this.customerRepoMock.Object, this.mapper);
+            var customer1 = new CustomerViewModel { Id = 101, FirstName = "Jim", LastName = "Smith" };
+            var customer2 = new CustomerViewModel { Id = 102, FirstName = "Alice", LastName = "Jones" };
+            this.customerServiceMock.Setup(x => x.GetAllCustomersAsync()).ReturnsAsync(new List<CustomerViewModel> { customer1, customer2 });
+            var controller = new CustomerController(this.customerServiceMock.Object, this.mapper);
 
             // Act
             var result = await controller.GetCustomers() as OkObjectResult;
@@ -150,8 +151,8 @@ namespace UtgKata.Api.Tests.ControllerTests
         public async Task GetAllShouldReturnErrorIfNoCustomers()
         {
             // Arrange
-            this.customerRepoMock.Setup(x => x.GetAllAsync()).ReturnsAsync((List<Customer>)null);
-            var controller = new CustomerController(this.customerRepoMock.Object, this.mapper);
+            this.customerServiceMock.Setup(x => x.GetAllCustomersAsync()).ReturnsAsync((List<CustomerViewModel>)null);
+            var controller = new CustomerController(this.customerServiceMock.Object, this.mapper);
 
             // Act
             var result = await controller.GetCustomers() as NotFoundObjectResult;
@@ -177,8 +178,8 @@ namespace UtgKata.Api.Tests.ControllerTests
                 PostCode = "PR6 3ED"
             };
 
-            var controller = new CustomerController(this.customerRepoMock.Object, this.mapper);
-            this.customerRepoMock.Setup(x => x.AddAsync(It.IsAny<Customer>())).ReturnsAsync(101);
+            var controller = new CustomerController(this.customerServiceMock.Object, this.mapper);
+            this.customerServiceMock.Setup(x => x.AddCustomerAsync(It.IsAny<CustomerViewModel>())).ReturnsAsync(customer);
 
             // Act
             var result = await controller.AddCustomer(customer) as CreatedAtActionResult;
@@ -196,7 +197,7 @@ namespace UtgKata.Api.Tests.ControllerTests
         public async Task ShouldReturnBadRequestIfCustomerIsNotValid()
         {
             // Arrange
-            this.customerRepoMock.Setup(x => x.AddAsync(It.IsAny<Customer>())).Verifiable();
+            this.customerServiceMock.Setup(x => x.AddCustomerAsync(It.IsAny<CustomerViewModel>())).Verifiable();
             var customer = new CustomerViewModel 
             { 
                 CustomerRef = "A1",
@@ -205,7 +206,7 @@ namespace UtgKata.Api.Tests.ControllerTests
                 PostCode = "xxx" 
             };
 
-            var controller = new CustomerController(this.customerRepoMock.Object, this.mapper);
+            var controller = new CustomerController(this.customerServiceMock.Object, this.mapper);
 
             // Act
             var result = await controller.AddCustomer(customer) as BadRequestObjectResult;

@@ -9,6 +9,7 @@ using UtgKata.Data.Models;
 using UtgKata.Data.Repositories;
 using AutoMapper;
 using UtgKata.Api.Filters;
+using UtgKata.Api.Services;
 
 namespace UtgKata.Api
 {
@@ -35,8 +36,8 @@ namespace UtgKata.Api
                 return new UtgKataDbContext(optionsBuilder.Options);
             });
 
-            services.AddScoped<IRepository<Customer>, GeneralRepository<Customer>>();
-            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddTransient<IRepository<Customer>, GeneralRepository<Customer>>();
+            services.AddTransient<ICustomerService, CustomerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
