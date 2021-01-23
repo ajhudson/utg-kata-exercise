@@ -11,6 +11,7 @@ using UtgKata.Api.Utilities;
 using UtgKata.Data.Models;
 using UtgKata.Data.Repositories;
 using UtgKata.Api.Filters;
+using UtgKata.Api.Services;
 
 namespace UtgKata.Api.Controllers
 {
@@ -18,14 +19,14 @@ namespace UtgKata.Api.Controllers
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private readonly ICustomerRepository customerRepo;
+        private readonly ICustomerService customerService;
 
         private readonly IMapper mapper;
 
 
-        public CustomerController(ICustomerRepository customerRepo, IMapper mapper)
+        public CustomerController(ICustomerService customerService, IMapper mapper)
         {
-            this.customerRepo = customerRepo;
+            this.customerService = customerService;
             this.mapper = mapper;
         }
 
@@ -38,15 +39,14 @@ namespace UtgKata.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetCustomers()
         {
-            var customers = await this.customerRepo.GetAllAsync();
+            var customers = await this.customerService.GetAllCustomersAsync();
 
             if (customers == null || !customers.Any())
             {
                 return this.NotFound(new ErrorMessageViewModel(ErrorResponseFactory.ErrorMessage_NothingFound));
             }
 
-            var allCustomers = this.mapper.Map<List<Customer>, List<CustomerViewModel>>(customers);
-            var model = new CustomersViewModel { Customers = allCustomers };
+            var model = new CustomersViewModel { Customers = customers.ToList() };
 
             return this.Ok(model);
         }
@@ -62,34 +62,30 @@ namespace UtgKata.Api.Controllers
         [Route("{id}")]
         public async Task<IActionResult> GetCustomerById(int id)
         {
-            var customer = await this.customerRepo.GetByIdAsync(id);
+            var customer = await this.customerService.GetCustomerByIdAsync(id);
 
             if (customer == null)
             {
                 return this.NotFound(new ErrorMessageViewModel(string.Format(ErrorResponseFactory.ErrorMessage_EntityNotFound, id)));
             }
 
-            var model = this.mapper.Map<Customer, CustomerViewModel>(customer);
-
-            return this.Ok(model);
+            return this.Ok(customer);
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Route("ref/{reference}")]
-        public IActionResult GetCustomerByReference(string reference)
+        public async Task<IActionResult> GetCustomerByReference(string reference)
         {
-            var customer = this.customerRepo.GetByCustomerReference(reference);
+            var customer = await this.customerService.GetCustomerByReferenceAsync(reference);
 
             if (customer == null)
             {
                 return this.NotFound(new ErrorMessageViewModel($"No customer could be found with the reference '{reference}'"));
             }
 
-            var model = this.mapper.Map<Customer, CustomerViewModel>(customer);
-
-            return this.Ok(model);
+            return this.Ok(customer);
         }
 
         /// <summary>
@@ -112,11 +108,9 @@ namespace UtgKata.Api.Controllers
                 return this.BadRequest(new ErrorMessageViewModel($"{ErrorResponseFactory.ErrorMessage_ValidationErrorsFound} {errorsList}"));
             }
 
-            var entity = this.mapper.Map<CustomerViewModel, Customer>(customer);
-            int id = await this.customerRepo.AddAsync(entity);
-            var model = this.mapper.Map<Customer, CustomerViewModel>(entity);
+            var addedCustomer = await this.customerService.AddCustomerAsync(customer);
 
-            return this.CreatedAtAction(nameof(GetCustomerById), new { id }, model);
+            return this.CreatedAtAction(nameof(GetCustomerById), new { addedCustomer.Id }, addedCustomer);
         }
     }
 }

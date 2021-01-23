@@ -9,6 +9,7 @@ using UtgKata.Data.Models;
 using UtgKata.Data.Repositories;
 using AutoMapper;
 using UtgKata.Api.Filters;
+using UtgKata.Api.Services;
 
 namespace UtgKata.Api
 {
@@ -26,16 +27,17 @@ namespace UtgKata.Api
         {
             services.AddControllers(opts => opts.Filters.Add<GeneralResponseViewResultFilterAttribute>());
             services.AddAutoMapper(typeof(Startup));
-            services.AddTransient(provider =>
+
+            services.AddScoped(provider =>
             {
                 var optionsBuilder = new DbContextOptionsBuilder<UtgKataDbContext>();
-                optionsBuilder.UseSqlServer(DbContextSettings.ConnectionString);
+                optionsBuilder.UseInMemoryDatabase(DbContextSettings.DatabaseName);
 
                 return new UtgKataDbContext(optionsBuilder.Options);
             });
 
-            services.AddScoped<IRepository<Customer>, GeneralRepository<Customer>>();
-            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddTransient<IRepository<Customer>, GeneralRepository<Customer>>();
+            services.AddTransient<ICustomerService, CustomerService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

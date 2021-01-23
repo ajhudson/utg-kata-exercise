@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using UtgKata.Api.Controllers;
 using UtgKata.Api.Filters;
 using UtgKata.Api.Models;
+using UtgKata.Api.Services;
 using UtgKata.Data.Models;
 using UtgKata.Data.Repositories;
 using Xunit;
@@ -32,9 +33,9 @@ namespace UtgKata.Api.Tests
                 ActionDescriptor = new ActionDescriptor()
             };
 
-            var mockRepo = new Mock<ICustomerRepository>();
+            var mockService = new Mock<ICustomerService>();
             var mockMapper = new Mock<IMapper>();
-            var controller = new CustomerController(mockRepo.Object, mockMapper.Object);
+            var controller = new CustomerController(mockService.Object, mockMapper.Object);
             var actionResult = new OkObjectResult(new TestViewModel { TestId = 123 });
             var ctx = new ResultExecutingContext(actionCtx, new List<IFilterMetadata>(), actionResult, controller);
             var mockDelegate = new Mock<ResultExecutionDelegate>();
@@ -69,9 +70,9 @@ namespace UtgKata.Api.Tests
                 ActionDescriptor = new ActionDescriptor()
             };
 
-            var mockRepo = new Mock<ICustomerRepository>();
+            var mockService = new Mock<ICustomerService>();
             var mockMapper = new Mock<IMapper>();
-            var controller = new CustomerController(mockRepo.Object, mockMapper.Object);
+            var controller = new CustomerController(mockService.Object, mockMapper.Object);
             var actionResult = new BadRequestObjectResult(new ErrorMessageViewModel("Something bad happened"));
             var ctx = new ResultExecutingContext(actionCtx, new List<IFilterMetadata>(), actionResult, controller);
             var mockDelegate = new Mock<ResultExecutionDelegate>();

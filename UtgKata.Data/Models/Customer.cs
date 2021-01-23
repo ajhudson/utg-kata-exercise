@@ -7,7 +7,7 @@ using System.Text;
 
 namespace UtgKata.Data.Models
 {
-    public class Customer : BaseEntity
+    public class Customer : BaseEntity, IEntityCreatedAt
     {
         [Required]
         [MaxLength(50)]
