@@ -1,20 +1,22 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using UtgKata.Api.Models;
-using UtgKata.Api.Models.Validators;
-using UtgKata.Api.Utilities;
-using UtgKata.Data.Models;
-using UtgKata.Data.Repositories;
-using UtgKata.Api.Filters;
-using UtgKata.Api.Services;
+﻿// <copyright file="CustomerController.cs" company="ajhudson">
+// Copyright (c) ajhudson. All rights reserved.
+// </copyright>
 
 namespace UtgKata.Api.Controllers
 {
+    using System.Linq;
+    using System.Threading.Tasks;
+    using AutoMapper;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using UtgKata.Api.Models;
+    using UtgKata.Api.Models.Validators;
+    using UtgKata.Api.Services;
+    using UtgKata.Api.Utilities;
+
+    /// <summary>
+    ///   The customer controller.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class CustomerController : ControllerBase
@@ -23,17 +25,19 @@ namespace UtgKata.Api.Controllers
 
         private readonly IMapper mapper;
 
-
+        /// <summary>Initializes a new instance of the <see cref="CustomerController" /> class.</summary>
+        /// <param name="customerService">The customer service.</param>
+        /// <param name="mapper">The mapper.</param>
         public CustomerController(ICustomerService customerService, IMapper mapper)
         {
             this.customerService = customerService;
             this.mapper = mapper;
         }
 
-        /// <summary>
-        /// Get all the customers
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Gets the customers.</summary>
+        /// <returns>
+        ///   A view model containing all the customers.
+        /// </returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -43,7 +47,7 @@ namespace UtgKata.Api.Controllers
 
             if (customers == null || !customers.Any())
             {
-                return this.NotFound(new ErrorMessageViewModel(ErrorResponseFactory.ErrorMessage_NothingFound));
+                return this.NotFound(new ErrorMessageViewModel(ErrorResponseFactory.ErrorMessageNothingFound));
             }
 
             var model = new CustomersViewModel { Customers = customers.ToList() };
@@ -51,11 +55,11 @@ namespace UtgKata.Api.Controllers
             return this.Ok(model);
         }
 
-        /// <summary>
-        /// Get the customers by id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <summary>Gets the customer by identifier.</summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>
+        ///   <br />
+        /// </returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -66,12 +70,17 @@ namespace UtgKata.Api.Controllers
 
             if (customer == null)
             {
-                return this.NotFound(new ErrorMessageViewModel(string.Format(ErrorResponseFactory.ErrorMessage_EntityNotFound, id)));
+                return this.NotFound(new ErrorMessageViewModel(string.Format(ErrorResponseFactory.ErrorMessageEntityNotFound, id)));
             }
 
             return this.Ok(customer);
         }
 
+        /// <summary>Gets the customer by reference.</summary>
+        /// <param name="reference">The reference.</param>
+        /// <returns>
+        ///   <br />
+        /// </returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -88,11 +97,11 @@ namespace UtgKata.Api.Controllers
             return this.Ok(customer);
         }
 
-        /// <summary>
-        /// Add a new customer to the database
-        /// </summary>
-        /// <param name="customer"></param>
-        /// <returns></returns>
+        /// <summary>Adds the customer.</summary>
+        /// <param name="customer">The customer.</param>
+        /// <returns>
+        ///   <br />
+        /// </returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -103,14 +112,14 @@ namespace UtgKata.Api.Controllers
 
             if (!validationResult.IsValid)
             {
-                var errorsList = string.Join<FluentValidation.Results.ValidationFailure>(',',validationResult.Errors.ToArray());
+                var errorsList = string.Join<FluentValidation.Results.ValidationFailure>(',', validationResult.Errors.ToArray());
 
-                return this.BadRequest(new ErrorMessageViewModel($"{ErrorResponseFactory.ErrorMessage_ValidationErrorsFound} {errorsList}"));
+                return this.BadRequest(new ErrorMessageViewModel($"{ErrorResponseFactory.ErrorMessageValidationErrorsFound} {errorsList}"));
             }
 
             var addedCustomer = await this.customerService.AddCustomerAsync(customer);
 
-            return this.CreatedAtAction(nameof(GetCustomerById), new { addedCustomer.Id }, addedCustomer);
+            return this.CreatedAtAction(nameof(this.GetCustomerById), new { addedCustomer.Id }, addedCustomer);
         }
     }
 }

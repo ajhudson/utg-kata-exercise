@@ -1,16 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using UtgKata.Lib.CsvReader.CustomExceptions;
-using UtgKata.Lib.CsvReader.Models;
+﻿// <copyright file="CsvReader.cs" company="ajhudson">
+// Copyright (c) ajhudson. All rights reserved.
+// </copyright>
 
 namespace UtgKata.Lib.CsvReader
 {
-    public class CsvReader<TMappedModel> : ICsvReader<TMappedModel> where TMappedModel : CsvReaderModelBase, new()
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+    using UtgKata.Lib.CsvReader.CustomExceptions;
+    using UtgKata.Lib.CsvReader.Models;
+
+    /// <summary>
+    /// The CSV reader.
+    /// </summary>
+    /// <typeparam name="TMappedModel">The type of the mapped model.</typeparam>
+    /// <seealso cref="UtgKata.Lib.CsvReader.ICsvReader{TMappedModel}" />
+    public class CsvReader<TMappedModel> : ICsvReader<TMappedModel>
+        where TMappedModel : CsvReaderModelBase, new()
     {
         private readonly string csvAbsolutePath;
 
@@ -18,6 +26,10 @@ namespace UtgKata.Lib.CsvReader
 
         private readonly ICsvRowMapper<TMappedModel> csvRowMapper;
 
+        /// <summary>Initializes a new instance of the <see cref="CsvReader{TMappedModel}" /> class.</summary>
+        /// <param name="rowMapper">The row mapper.</param>
+        /// <param name="csvAbsolutePath">The CSV absolute path.</param>
+        /// <param name="includesHeader">if set to <c>true</c> [includes header].</param>
         public CsvReader(ICsvRowMapper<TMappedModel> rowMapper, string csvAbsolutePath, bool includesHeader = true)
         {
             this.csvAbsolutePath = csvAbsolutePath;
@@ -25,10 +37,10 @@ namespace UtgKata.Lib.CsvReader
             this.csvRowMapper = rowMapper;
         }
 
-        /// <summary>
-        /// Read the CSV file and return a list of models
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Reads the CSV asynchronous.</summary>
+        /// <returns>
+        ///   A list of mapped models based on the configuration of the mapped model.
+        /// </returns>
         public async Task<IEnumerable<TMappedModel>> ReadCsvAsync()
         {
             this.AssertFileExists();
@@ -40,8 +52,22 @@ namespace UtgKata.Lib.CsvReader
         }
 
         /// <summary>
-        /// Check the file can be found and throw an exception if it cannot
+        /// Parses the row.
         /// </summary>
+        /// <param name="row">The row.</param>
+        /// <returns>The parsed row.</returns>
+        private static string[] ParseRow(string row)
+        {
+            var csvParsePattern = new Regex("(?<=^|,)(\"(?:[^\"]|\"\")*\"|[^,]*)", RegexOptions.Compiled);
+            string[] columnsData = csvParsePattern.Matches(row).OfType<Match>().Select(m => Regex.Replace(m.Value, @"(^\""|\""$)", string.Empty)).ToArray();
+
+            return columnsData;
+        }
+
+        /// <summary>
+        /// Asserts the file exists.
+        /// </summary>
+        /// <exception cref="FileNotFoundException">csvAbsolutePath.</exception>
         private void AssertFileExists()
         {
             if (!File.Exists(this.csvAbsolutePath))
@@ -51,7 +77,7 @@ namespace UtgKata.Lib.CsvReader
         }
 
         /// <summary>
-        /// Only CSV files with headers are supported at the moment
+        /// Only CSV files with headers are supported at the moment.
         /// </summary>
         private void AssertHeaderExists()
         {
@@ -62,7 +88,7 @@ namespace UtgKata.Lib.CsvReader
         }
 
         /// <summary>
-        /// Parse the CSV and return an enumerable of the models in the required type
+        /// Parse the CSV and return an enumerable of the models in the required type.
         /// </summary>
         private async Task<IEnumerable<TMappedModel>> ParseCsvAsync()
         {
@@ -82,19 +108,6 @@ namespace UtgKata.Lib.CsvReader
             var mappedModels = this.csvRowMapper.MapToModels(headers, parsedRows);
 
             return mappedModels;
-        }
-
-        /// <summary>
-        /// Parse the row into an array of strings
-        /// </summary>
-        /// <param name="row"></param>
-        /// <returns></returns>
-        private static string[] ParseRow(string row)
-        {
-            var csvParsePattern = new Regex("(?<=^|,)(\"(?:[^\"]|\"\")*\"|[^,]*)", RegexOptions.Compiled);
-            string[] columnsData = csvParsePattern.Matches(row).OfType<Match>().Select(m => Regex.Replace(m.Value, @"(^\""|\""$)", string.Empty)).ToArray();
-
-            return columnsData;
         }
     }
 }

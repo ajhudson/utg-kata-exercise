@@ -1,19 +1,26 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using UtgKata.Data;
-using UtgKata.Data.Extensions;
-using UtgKata.Data.Models;
-using UtgKata.Lib.CsvReader.Models;
+﻿// <copyright file="Program.cs" company="ajhudson">
+// Copyright (c) ajhudson. All rights reserved.
+// </copyright>
 
 namespace UtgKata.Console
 {
-    class Program
+    using System;
+    using System.IO;
+    using System.Threading.Tasks;
+    using Microsoft.EntityFrameworkCore;
+    using UtgKata.Data;
+    using UtgKata.Data.Extensions;
+    using UtgKata.Lib.CsvReader.Models;
+
+    /// <summary>
+    /// Main program.
+    /// </summary>
+    public class Program
     {
-
-
-        static async Task Main(string[] args)
+        /// <summary>Defines the entry point of the application.</summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public static async Task Main(string[] args)
         {
             // Check the database is created
             var optsBuilder = new DbContextOptionsBuilder<UtgKataDbContext>();
@@ -39,7 +46,7 @@ namespace UtgKata.Console
             {
                 await csvImporter.ImportCsvToDbAsync(csvPath, ConsoleAppSettings.AddCustomerApiEndpoint);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 System.Console.WriteLine($"Error importing CSV file: {e.Message}");
             }

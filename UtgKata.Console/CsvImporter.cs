@@ -1,35 +1,56 @@
-﻿using Polly;
-using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using UtgKata.Console.Events;
-using UtgKata.Console.HttpClientRetryPolicies;
-using UtgKata.Lib.CsvReader;
-using UtgKata.Lib.CsvReader.Models;
+﻿// <copyright file="CsvImporter.cs" company="ajhudson">
+// Copyright (c) ajhudson. All rights reserved.
+// </copyright>
 
 namespace UtgKata.Console
 {
-    public class CsvImporter<TCsvRecordModel> : ICsvImporter<TCsvRecordModel> where TCsvRecordModel : CsvReaderModelBase, new()
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Text;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using Polly;
+    using UtgKata.Console.Events;
+    using UtgKata.Console.HttpClientRetryPolicies;
+    using UtgKata.Lib.CsvReader;
+    using UtgKata.Lib.CsvReader.Models;
+
+    /// <summary>
+    /// The CSV importer.
+    /// </summary>
+    /// <typeparam name="TCsvRecordModel">The type of the CSV record model.</typeparam>
+    /// <seealso cref="UtgKata.Console.ICsvImporter{TCsvRecordModel}" />
+    public class CsvImporter<TCsvRecordModel> : ICsvImporter<TCsvRecordModel>
+        where TCsvRecordModel : CsvReaderModelBase, new()
     {
-        public event EventHandler<CsvFileResolvedEventArgs> CsvFilePathResolved;
-
-        public event EventHandler<NumberModelsFoundEventArgs> NumberModelsFound;
-
-        public event EventHandler<SavedAtEndpointEventArgs<TCsvRecordModel>> SuccessfullySavedAtEndpoint;
-
-        public event EventHandler<FailedSaveAtEndpointEventArgs<TCsvRecordModel>> FailedSaveAtEndpoint;
-
+        /// <summary>The retry policy.</summary>
         private readonly IAsyncPolicy<HttpResponseMessage> retryPolicy;
 
+        /// <summary>Initializes a new instance of the <see cref="CsvImporter{TCsvRecordModel}" /> class.</summary>
         public CsvImporter()
         {
             this.retryPolicy = RetryPolicy.GetRetryPolicy();
         }
 
+        /// <summary>Occurs when [CSV file path resolved].</summary>
+        public event EventHandler<CsvFileResolvedEventArgs> CsvFilePathResolved;
+
+        /// <summary>Occurs when [number models found].</summary>
+        public event EventHandler<NumberModelsFoundEventArgs> NumberModelsFound;
+
+        /// <summary>Occurs when [successfully saved at endpoint].</summary>
+        public event EventHandler<SavedAtEndpointEventArgs<TCsvRecordModel>> SuccessfullySavedAtEndpoint;
+
+        /// <summary>Occurs when [failed save at endpoint].</summary>
+        public event EventHandler<FailedSaveAtEndpointEventArgs<TCsvRecordModel>> FailedSaveAtEndpoint;
+
+        /// <summary>Imports the CSV to database asynchronous.</summary>
+        /// <param name="csvPath">The CSV path.</param>
+        /// <param name="importApiEndpoint">The import API endpoint.</param>
+        /// <exception cref="FileNotFoundException">The file which isn't found.</exception>
+        /// <returns>Asynchronous task when completed.</returns>
         public async Task ImportCsvToDbAsync(string csvPath, string importApiEndpoint)
         {
             // Get the path to the CSV file
@@ -37,7 +58,7 @@ namespace UtgKata.Console
 
             if (File.Exists(csvAbsolutePath))
             {
-                OnCsvFilePathResolved(new CsvFileResolvedEventArgs(csvAbsolutePath));
+                this.OnCsvFilePathResolved(new CsvFileResolvedEventArgs(csvAbsolutePath));
             }
             else
             {
@@ -53,7 +74,7 @@ namespace UtgKata.Console
             var models = csvModels.ToList();
 
             // Let the user know how many models were found
-            OnNumberModelsFound(new NumberModelsFoundEventArgs(models.Count()));
+            this.OnNumberModelsFound(new NumberModelsFoundEventArgs(models.Count()));
 
             await Task.Delay(5000); // wait for API project to load
 
@@ -65,26 +86,39 @@ namespace UtgKata.Console
             }
         }
 
+        /// <summary>Raises the <see cref="E:CsvFilePathResolved" /> event.</summary>
+        /// <param name="e">The <see cref="CsvFileResolvedEventArgs" /> instance containing the event data.</param>
         protected virtual void OnCsvFilePathResolved(CsvFileResolvedEventArgs e)
         {
-            CsvFilePathResolved?.Invoke(this, e);
+            this.CsvFilePathResolved?.Invoke(this, e);
         }
 
+        /// <summary>Raises the <see cref="E:NumberModelsFound" /> event.</summary>
+        /// <param name="e">The <see cref="NumberModelsFoundEventArgs" /> instance containing the event data.</param>
         protected virtual void OnNumberModelsFound(NumberModelsFoundEventArgs e)
         {
-            NumberModelsFound?.Invoke(this, e);
+            this.NumberModelsFound?.Invoke(this, e);
         }
 
+        /// <summary>Raises the <see cref="E:SuccessfullySavedOnEndpoint" /> event.</summary>
+        /// <param name="e">The <see cref="SavedAtEndpointEventArgs{TCsvRecordModel}" /> instance containing the event data.</param>
         protected virtual void OnSuccessfullySavedOnEndpoint(SavedAtEndpointEventArgs<TCsvRecordModel> e)
         {
-            SuccessfullySavedAtEndpoint?.Invoke(this, e);
+            this.SuccessfullySavedAtEndpoint?.Invoke(this, e);
         }
 
+        /// <summary>Raises the <see cref="E:FailedSaveOnEndpoint" /> event.</summary>
+        /// <param name="e">The <see cref="FailedSaveAtEndpointEventArgs{TCsvRecordModel}" /> instance containing the event data.</param>
         protected virtual void OnFailedSaveOnEndpoint(FailedSaveAtEndpointEventArgs<TCsvRecordModel> e)
         {
-            FailedSaveAtEndpoint?.Invoke(this, e);
+            this.FailedSaveAtEndpoint?.Invoke(this, e);
         }
 
+        /// <summary>
+        /// Posts the model asynchronous.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <returns>The http response.</returns>
         private async Task<HttpResponseMessage> PostModelAsync(TCsvRecordModel model)
         {
             var httpClientHandler = new HttpClientHandler();
@@ -98,11 +132,11 @@ namespace UtgKata.Console
 
             if (httpResponse.IsSuccessStatusCode)
             {
-                OnSuccessfullySavedOnEndpoint(new SavedAtEndpointEventArgs<TCsvRecordModel>(model, httpResponse.StatusCode, responseText));
+                this.OnSuccessfullySavedOnEndpoint(new SavedAtEndpointEventArgs<TCsvRecordModel>(model, httpResponse.StatusCode, responseText));
             }
             else
             {
-                OnFailedSaveOnEndpoint(new FailedSaveAtEndpointEventArgs<TCsvRecordModel>(model, httpResponse.StatusCode, responseText));
+                this.OnFailedSaveOnEndpoint(new FailedSaveAtEndpointEventArgs<TCsvRecordModel>(model, httpResponse.StatusCode, responseText));
             }
 
             return httpResponse;

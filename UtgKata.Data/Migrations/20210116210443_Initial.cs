@@ -1,4 +1,8 @@
-﻿using System;
+﻿// <copyright file="20210116210443_Initial.cs" company="ajhudson">
+// Copyright (c) ajhudson. All rights reserved.
+// </copyright>
+
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace UtgKata.Data.Migrations
@@ -22,7 +26,7 @@ namespace UtgKata.Data.Migrations
                     County = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Country = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     PostCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()")
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
                 },
                 constraints: table =>
                 {
