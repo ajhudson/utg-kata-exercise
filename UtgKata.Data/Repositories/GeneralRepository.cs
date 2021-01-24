@@ -1,31 +1,43 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using UtgKata.Data.Models;
-using System.Linq.Expressions;
+﻿// <copyright file="GeneralRepository.cs" company="ajhudson">
+// Copyright (c) ajhudson. All rights reserved.
+// </copyright>
 
 namespace UtgKata.Data.Repositories
 {
-    public class GeneralRepository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.EntityFrameworkCore;
+    using UtgKata.Data.Models;
+
+    /// <summary>
+    /// Generic repository for any class which inherits from <see cref="BaseEntity"/>.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of the entity.</typeparam>
+    /// <seealso cref="UtgKata.Data.Repositories.IRepository{TEntity}" />
+    public class GeneralRepository<TEntity> : IRepository<TEntity>
+        where TEntity : BaseEntity
     {
-        protected readonly UtgKataDbContext dbContext;
+        /// <summary>The database context.</summary>
+        private readonly UtgKataDbContext dbContext;
 
-        protected readonly DbSet<TEntity> dbSet;
+        /// <summary>The database set.</summary>
+        private readonly DbSet<TEntity> dbSet;
 
+        /// <summary>Initializes a new instance of the <see cref="GeneralRepository{TEntity}" /> class.</summary>
+        /// <param name="dbContext">The database context.</param>
         public GeneralRepository(UtgKataDbContext dbContext)
         {
             this.dbContext = dbContext;
             this.dbSet = dbContext.Set<TEntity>();
         }
 
-        /// <summary>
-        /// Add a new entity to the database/
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
+        /// <summary>Adds the asynchronous.</summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns>
+        ///   <br />
+        /// </returns>
         public virtual async Task<TEntity> AddAsync(TEntity entity)
         {
             // if the entity implements ICreatedAt then we want to set the created at property
@@ -42,11 +54,10 @@ namespace UtgKata.Data.Repositories
             return entity;
         }
 
-
-        /// <summary>
-        /// Get all records from the database of a specific type
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Gets all asynchronous.</summary>
+        /// <returns>
+        ///   List of entities.
+        /// </returns>
         public virtual async Task<List<TEntity>> GetAllAsync()
         {
             var entities = await this.dbSet.ToListAsync();
@@ -54,11 +65,11 @@ namespace UtgKata.Data.Repositories
             return entities;
         }
 
-        /// <summary>
-        /// Get a specific record using the primary key id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <summary>Gets the by identifier asynchronous.</summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>
+        ///   <br />
+        /// </returns>
         public virtual async Task<TEntity> GetByIdAsync(int id)
         {
             var entity = await this.dbSet.FindAsync(id);
@@ -66,11 +77,11 @@ namespace UtgKata.Data.Repositories
             return entity;
         }
 
-        /// <summary>
-        /// Get the first match using the criteria supplied.
-        /// </summary>
-        /// <param name="filterCriteria"></param>
-        /// <returns></returns>
+        /// <summary>Gets the first match asynchronous.</summary>
+        /// <param name="filterCriteria">The filter criteria.</param>
+        /// <returns>
+        ///   <br />
+        /// </returns>
         public async Task<TEntity> GetFirstMatchAsync(Func<TEntity, bool> filterCriteria)
         {
             var entity = this.dbSet.Where(filterCriteria).FirstOrDefault();
